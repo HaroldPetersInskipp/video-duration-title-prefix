@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         YouTube SponsorBlock/Duration Title Prefix
 // @namespace    https://github.com/HaroldPetersInskipp/
-// @version      1.1.0
+// @version      1.1.1
 // @homepageURL  https://github.com/HaroldPetersInskipp/video-duration-title-prefix
 // @supportURL   https://github.com/HaroldPetersInskipp/video-duration-title-prefix/issues
 // @description  Prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable.
 // @author       Inskipp
 // @copyright    2024+, HaroldPetersInskipp (https://github.com/HaroldPetersInskipp)
-// @match        https://www.youtube.com/*
+// @match        https://www.youtube.com/watch*
 // @grant        none
 // @license      MIT; https://github.com/HaroldPetersInskipp/video-duration-title-prefix/blob/main/LICENSE
 // @icon         https://raw.githubusercontent.com/HaroldPetersInskipp/video-duration-title-prefix/main/icon.png
