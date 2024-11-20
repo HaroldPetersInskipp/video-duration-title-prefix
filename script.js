@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         YouTube SponsorBlock/Duration Title Prefix
 // @namespace    https://github.com/HaroldPetersInskipp/
-// @version      1.1.1
+// @version      1.2.0
 // @homepageURL  https://github.com/HaroldPetersInskipp/video-duration-title-prefix
 // @supportURL   https://github.com/HaroldPetersInskipp/video-duration-title-prefix/issues
-// @description  Prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable.
+// @description  Prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable, and remove the prefix on non-watch pages.
 // @author       Inskipp
-// @copyright    2024+, HaroldPetersInskipp (https://github.com/HaroldPetersInskipp)
-// @match        https://www.youtube.com/watch*
+// @copyright    2024+, HaroldPetersInskipp
+// @match        https://www.youtube.com/*
 // @grant        none
 // @license      MIT; https://github.com/HaroldPetersInskipp/video-duration-title-prefix/blob/main/LICENSE
 // @icon         https://raw.githubusercontent.com/HaroldPetersInskipp/video-duration-title-prefix/main/icon.png
@@ -17,17 +17,25 @@
 (function () {
     'use strict';
 
+    let lastKnownURL = location.href;
+
     /**
      * Updates the tab's title by prefixing it with the SponsorBlock duration or video duration.
      */
     function updateTitle() {
+        if (!location.href.startsWith("https://www.youtube.com/watch?v=")) {
+            // Remove any existing prefix if not on a video watch page.
+            document.title = document.title.replace(/^\[.*?\] /, '');
+            return;
+        }
+
         let prefix = null;
 
         // Try to get the SponsorBlock duration.
         const sponsorElement = document.getElementById('sponsorBlockDurationAfterSkips');
         if (sponsorElement && sponsorElement.innerText.trim()) {
             prefix = sponsorElement.innerText.trim();
-            prefix = prefix.replaceAll("(","").replaceAll(")","");
+            prefix = prefix.replaceAll("(", "").replaceAll(")", "");
         }
 
         // Fallback to the video duration if SponsorBlock is unavailable.
@@ -55,8 +63,22 @@
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Check if the page is YouTube and start observing.
+    /**
+     * Checks for URL changes and triggers title updates.
+     */
+    function monitorURLChanges() {
+        if (location.href !== lastKnownURL) {
+            lastKnownURL = location.href;
+            updateTitle();
+        }
+    }
+
+    // Initialize mutation observer and URL change monitor.
     if (location.hostname === 'www.youtube.com') {
         observeTitleChanges();
+        updateTitle(); // Initial check.
+        // Monitor URL changes using both popstate and a setInterval for reliability.
+        window.addEventListener('popstate', monitorURLChanges);
+        setInterval(monitorURLChanges, 500); // Fallback for pushState navigation.
     }
 })();
