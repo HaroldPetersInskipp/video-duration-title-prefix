@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube SponsorBlock/Duration Title Prefix
 // @namespace    https://github.com/HaroldPetersInskipp/
-// @version      1.2.0
+// @version      1.2.1
 // @homepageURL  https://github.com/HaroldPetersInskipp/video-duration-title-prefix
 // @supportURL   https://github.com/HaroldPetersInskipp/video-duration-title-prefix/issues
 // @description  Prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable, and remove the prefix on non-watch pages.
@@ -17,28 +17,26 @@
 (function () {
     'use strict';
 
-    let lastKnownURL = location.href;
-
     /**
-     * Updates the tab's title by prefixing it with the SponsorBlock duration or video duration.
+     * Updates the title prefix for YouTube watch pages.
+     * Prioritizes SponsorBlock durations, falling back to video durations.
      */
     function updateTitle() {
         if (!location.href.startsWith("https://www.youtube.com/watch?v=")) {
-            // Remove any existing prefix if not on a video watch page.
+            // Remove any existing prefix if not on a watch page
             document.title = document.title.replace(/^\[.*?\] /, '');
             return;
         }
 
         let prefix = null;
 
-        // Try to get the SponsorBlock duration.
+        // Try to fetch the SponsorBlock duration first
         const sponsorElement = document.getElementById('sponsorBlockDurationAfterSkips');
         if (sponsorElement && sponsorElement.innerText.trim()) {
-            prefix = sponsorElement.innerText.trim();
-            prefix = prefix.replaceAll("(", "").replaceAll(")", "");
+            prefix = sponsorElement.innerText.trim().replace(/[()]/g, '');
         }
 
-        // Fallback to the video duration if SponsorBlock is unavailable.
+        // Fallback to the video duration if SponsorBlock is unavailable
         if (!prefix) {
             const durationElement = document.querySelector('.ytp-time-duration');
             if (durationElement && durationElement.innerText.trim()) {
@@ -46,39 +44,60 @@
             }
         }
 
-        // Update the document title if a prefix was found.
+        // Update the document title if a prefix is found
         if (prefix) {
-            const originalTitle = document.title.replace(/^\[.*?\] /, ''); // Remove any existing prefix.
+            const originalTitle = document.title.replace(/^\[.*?\] /, ''); // Remove any existing prefix
             document.title = `[${prefix}] ${originalTitle}`;
         }
     }
 
     /**
-     * Observes changes in the DOM and updates the tab's title when necessary.
+     * Observes relevant DOM elements for changes and updates the title when necessary.
      */
     function observeTitleChanges() {
-        const observer = new MutationObserver(updateTitle);
+        const observer = new MutationObserver(() => {
+            updateTitle(); // Debounced updates for performance
+        });
 
-        // Observe the entire document body for changes.
-        observer.observe(document.body, { childList: true, subtree: true });
+        // Observe specific elements relevant to duration changes
+        const targetNodes = [document.body, document.getElementById('sponsorBlockDurationAfterSkips')];
+        targetNodes.forEach((node) => {
+            if (node) {
+                observer.observe(node, { childList: true, subtree: true });
+            }
+        });
     }
 
     /**
-     * Checks for URL changes and triggers title updates.
+     * Monitors URL changes and triggers updates as necessary.
      */
     function monitorURLChanges() {
-        if (location.href !== lastKnownURL) {
-            lastKnownURL = location.href;
-            updateTitle();
-        }
+        let lastURL = location.href;
+
+        const checkURLChange = () => {
+            if (location.href !== lastURL) {
+                lastURL = location.href;
+                updateTitle(); // Update title on navigation
+            }
+        };
+
+        // Intercept pushState and popstate for robust URL change detection
+        window.addEventListener('popstate', checkURLChange);
+        const originalPushState = history.pushState;
+        history.pushState = function (...args) {
+            originalPushState.apply(this, args);
+            checkURLChange();
+        };
     }
 
-    // Initialize mutation observer and URL change monitor.
+    // Initialize the script
+    function init() {
+        updateTitle(); // Initial title update
+        observeTitleChanges(); // Start observing relevant DOM changes
+        monitorURLChanges(); // Watch for navigation
+    }
+
     if (location.hostname === 'www.youtube.com') {
-        observeTitleChanges();
-        updateTitle(); // Initial check.
-        // Monitor URL changes using both popstate and a setInterval for reliability.
-        window.addEventListener('popstate', monitorURLChanges);
-        setInterval(monitorURLChanges, 500); // Fallback for pushState navigation.
+        init();
     }
 })();
