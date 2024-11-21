@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube SponsorBlock/Duration Title Prefix
 // @namespace    https://github.com/HaroldPetersInskipp/
-// @version      1.2.1
+// @version      1.2.2
 // @homepageURL  https://github.com/HaroldPetersInskipp/video-duration-title-prefix
 // @supportURL   https://github.com/HaroldPetersInskipp/video-duration-title-prefix/issues
 // @description  Prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable, and remove the prefix on non-watch pages.
@@ -18,7 +18,7 @@
     'use strict';
 
     /**
-     * Updates the title prefix for YouTube watch pages.
+     * Updates the title prefix for YouTube videos.
      * Prioritizes SponsorBlock durations, falling back to video durations.
      */
     function updateTitle() {
