@@ -1,5 +1,13 @@
 # video-duration-title-prefix
-Userscript to prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable.
+Userscript to prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable. Prefix is `[Live]` for livestream content.
+
+Screenshots
+------------
+Example result for a Livestream, Video, and Non-Video content respectively.
+<img alt="screenshot-1" width="1024px" src="screenshot-1.png" />
+
+Example demonstration of my use case, making it easier to order videos by length, to more quickly reduce the number of open tabs by watching shorter content first.
+<img alt="screenshot-2" width="1024px" src="screenshot-2.png" />
 
 Installation
 ------------
