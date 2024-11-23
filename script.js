@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube SponsorBlock/Duration Title Prefix
 // @namespace    https://github.com/HaroldPetersInskipp/
-// @version      1.2.2
+// @version      1.2.3
 // @homepageURL  https://github.com/HaroldPetersInskipp/video-duration-title-prefix
 // @supportURL   https://github.com/HaroldPetersInskipp/video-duration-title-prefix/issues
 // @description  Prefix the YouTube tab title with the SponsorBlock duration or the video duration if SponsorBlock is unavailable, and remove the prefix on non-watch pages.
@@ -30,10 +30,18 @@
 
         let prefix = null;
 
-        // Try to fetch the SponsorBlock duration first
-        const sponsorElement = document.getElementById('sponsorBlockDurationAfterSkips');
-        if (sponsorElement && sponsorElement.innerText.trim()) {
-            prefix = sponsorElement.innerText.trim().replace(/[()]/g, '');
+        // Check if it's a live stream first
+        const liveElement = document.querySelector('.ytp-live-badge');
+        if (liveElement.outerHTML != '<button class="ytp-live-badge ytp-button">Live</button>') {
+            prefix = "Live";
+        }
+
+        // Try to fetch the SponsorBlock duration second
+        if (!prefix) {
+            const sponsorElement = document.getElementById('sponsorBlockDurationAfterSkips');
+            if (sponsorElement && sponsorElement.innerText.trim()) {
+                prefix = sponsorElement.innerText.trim().replace(/[()]/g, '');
+            }
         }
 
         // Fallback to the video duration if SponsorBlock is unavailable
